@@ -4,6 +4,7 @@ package com.novashop.entity;
 import jakarta.persistence.*;
 import java.math.BigDecimal;
 
+
 @Entity
 @Table(name = "products")
 public class Product {
@@ -25,6 +26,9 @@ public class Product {
     private String imageUrl;
 
     private Integer stock;
+
+
+
 
     public Product() {}
 
@@ -66,4 +70,9 @@ public class Product {
     public Integer getStock() {
         return stock;
     }
+
+public void setStock(Integer stock) {
+    this.stock = stock;
+}
+
 }

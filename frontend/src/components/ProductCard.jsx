@@ -2,16 +2,10 @@
 function ProductCard({ product, onAddToCart }) {
   return (
     <div className="product-card">
-      <img
-        src={product.imageUrl}
-        alt={product.name}
-      />
+      <img src={product.imageUrl} alt={product.name} />
 
       <div className="product-info">
-        <span className="category">
-          {product.category}
-        </span>
-
+        <span className="category">{product.category}</span>
         <h3>{product.name}</h3>
         <p>{product.description}</p>
 
@@ -21,12 +15,10 @@ function ProductCard({ product, onAddToCart }) {
           </strong>
 
           <button
-            onClick={() => onAddToCart(product)}
             disabled={product.stock <= 0}
+            onClick={() => onAddToCart(product)}
           >
-            {product.stock > 0
-              ? "Add to Cart"
-              : "Out of Stock"}
+            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
           </button>
         </div>
       </div>
