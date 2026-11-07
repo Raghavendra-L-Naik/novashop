@@ -1,4 +1,6 @@
 
+import AdminDashboard from "./components/admin/AdminDashboard";
+
 import { useEffect, useState } from "react";
 import ProductCard from "./components/ProductCard";
 import Cart from "./components/Cart";
@@ -11,7 +13,20 @@ import "./App.css";
 
 function App() {
   const [page, setPage] = useState("products");
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const token = sessionStorage.getItem("novashop-token");
+    const savedUser = sessionStorage.getItem("novashop-user");
+
+    if (!token || !savedUser) return null;
+
+    try {
+      return JSON.parse(savedUser);
+    } catch {
+      sessionStorage.removeItem("novashop-token");
+      sessionStorage.removeItem("novashop-user");
+      return null;
+    }
+  });
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState(() => {
     try {
@@ -30,11 +45,9 @@ function App() {
   const [order, setOrder] = useState(null);
 
   async function loadProducts() {
-    setLoading(true);
-    setError("");
-
     try {
       const data = await apiRequest("/api/products");
+      setError("");
       setProducts(data);
     } catch (err) {
       setError(err.message);
@@ -44,19 +57,27 @@ function App() {
   }
 
   useEffect(() => {
-    loadProducts();
+    let cancelled = false;
 
-    const token = sessionStorage.getItem("novashop-token");
-    const savedUser = sessionStorage.getItem("novashop-user");
-
-    if (token && savedUser) {
+    async function initialLoad() {
       try {
-        setUser(JSON.parse(savedUser));
-      } catch {
-        sessionStorage.removeItem("novashop-token");
-        sessionStorage.removeItem("novashop-user");
+        const data = await apiRequest("/api/products");
+        if (!cancelled) {
+          setError("");
+          setProducts(data);
+        }
+      } catch (err) {
+        if (!cancelled) setError(err.message);
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     }
+
+    void initialLoad();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -168,15 +189,27 @@ function App() {
         </h2>
 
         <nav className="nav-actions">
-          {user ? (
-            <>
-              <span>Hi, {user.name}</span>
-              <button onClick={() => setPage("orders")}>
-                My Orders
-              </button>
-              <button onClick={logout}>Logout</button>
-            </>
-          ) : (
+          
+{user ? (
+  <>
+    <span>Hi, {user.name}</span>
+
+    {user.role === "ADMIN" && (
+      <button onClick={() => setPage("admin")}>
+        Admin Dashboard
+      </button>
+    )}
+
+    <button onClick={() => setPage("orders")}>
+      My Orders
+    </button>
+
+    <button onClick={logout}>
+      Logout
+    </button>
+  </>
+) : (
+
             <>
               <button onClick={() => setPage("login")}>
                 Login
@@ -291,6 +324,12 @@ function App() {
           </button>
         </main>
       )}
+
+{page === "admin" && user?.role === "ADMIN" && (
+  <AdminDashboard
+    onBack={() => setPage("products")}
+  />
+)}
 
       <footer>© NovaShop — Your Online Store</footer>
     </div>

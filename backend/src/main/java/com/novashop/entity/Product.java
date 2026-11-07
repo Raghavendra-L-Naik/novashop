@@ -71,8 +71,30 @@ public class Product {
         return stock;
     }
 
+
+public void setName(String name) {
+    this.name = name;
+}
+
+public void setDescription(String description) {
+    this.description = description;
+}
+
+public void setPrice(BigDecimal price) {
+    this.price = price;
+}
+
+public void setCategory(String category) {
+    this.category = category;
+}
+
+public void setImageUrl(String imageUrl) {
+    this.imageUrl = imageUrl;
+}
+
 public void setStock(Integer stock) {
     this.stock = stock;
 }
+
 
 }

@@ -20,6 +20,15 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
 import org.springframework.security.web.SecurityFilterChain;
+
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import java.util.List;
+
 import org.springframework.web.cors.*;
 
 import javax.crypto.SecretKey;
@@ -49,6 +58,27 @@ public class SecurityConfig {
 
         return new SecretKeySpec(key, "HmacSHA256");
     }
+
+@Bean
+JwtAuthenticationConverter jwtAuthenticationConverter() {
+    JwtAuthenticationConverter converter =
+        new JwtAuthenticationConverter();
+
+    converter.setJwtGrantedAuthoritiesConverter(jwt -> {
+        String role = jwt.getClaimAsString("role");
+
+        if (role == null) {
+            return List.of();
+        }
+
+        return List.of(
+            new SimpleGrantedAuthority("ROLE_" + role)
+        );
+    });
+
+    return converter;
+}
+
 
     @Bean
     JwtEncoder jwtEncoder(SecretKey secretKey) {
@@ -86,31 +116,38 @@ public class SecurityConfig {
         return source;
     }
 
-    @Bean
-    SecurityFilterChain securityFilterChain(
-            HttpSecurity http) throws Exception {
+    
+@Bean
+SecurityFilterChain securityFilterChain(
+        HttpSecurity http,
+        JwtAuthenticationConverter jwtAuthenticationConverter
+) throws Exception {
 
-        return http
-            .csrf(csrf -> csrf.disable())
-            .cors(Customizer.withDefaults())
-            .sessionManagement(session ->
-                session.sessionCreationPolicy(
-                    SessionCreationPolicy.STATELESS
-                )
+    return http
+        .csrf(csrf -> csrf.disable())
+        .cors(Customizer.withDefaults())
+        .sessionManagement(session ->
+            session.sessionCreationPolicy(
+                SessionCreationPolicy.STATELESS
             )
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**").permitAll()
-                .requestMatchers(
-                    HttpMethod.GET, "/api/products/**"
-                ).permitAll()
-                .requestMatchers(
-                    HttpMethod.GET, "/api/hello"
-                ).permitAll()
-                .anyRequest().authenticated()
+        )
+        .authorizeHttpRequests(auth -> auth
+            .requestMatchers("/api/auth/**").permitAll()
+            .requestMatchers("/api/admin/**").hasRole("ADMIN")
+            .requestMatchers(
+                HttpMethod.GET, "/api/products/**"
+            ).permitAll()
+            .requestMatchers(
+                HttpMethod.GET, "/api/hello"
+            ).permitAll()
+            .anyRequest().authenticated()
+        )
+        .oauth2ResourceServer(oauth -> oauth.jwt(jwt ->
+            jwt.jwtAuthenticationConverter(
+                jwtAuthenticationConverter
             )
-            .oauth2ResourceServer(oauth ->
-                oauth.jwt(Customizer.withDefaults())
-            )
-            .build();
-    }
+        ))
+        .build();
+}
+
 }

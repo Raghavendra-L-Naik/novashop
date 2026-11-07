@@ -26,7 +26,8 @@ export default function Login({ onLogin, onRegister }) {
       onLogin({
         id: data.userId,
         name: data.name,
-        email: data.email
+        email: data.email,
+        role: data.role
       });
     } catch (err) {
       setError(err.message);

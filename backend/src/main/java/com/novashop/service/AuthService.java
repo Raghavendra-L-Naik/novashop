@@ -103,7 +103,8 @@ public class AuthService {
             token,
             user.getId(),
             user.getName(),
-            user.getEmail()
+            user.getEmail(),
+            user.getRole()
         );
     }
 
@@ -111,6 +112,7 @@ public class AuthService {
         String token,
         Long userId,
         String name,
-        String email
+        String email,
+        String role
     ) {}
 }

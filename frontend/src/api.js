@@ -17,20 +17,18 @@ export async function apiRequest(path, options = {}) {
 
   if (!response.ok) {
     if (response.status === 401) {
-      throw new Error(
-        "Unauthorized. Please log in again."
-      );
+      throw new Error("Session expired or unauthorized. Log in again.");
     }
 
-    if (response.status === 409) {
-      throw new Error(
-        "Conflict: account already exists or stock changed."
-      );
+    if (response.status === 403) {
+      throw new Error("You don't have permission to do that.");
     }
 
-    throw new Error(
-      `Request failed with status ${response.status}`
-    );
+    throw new Error(`Request failed: HTTP ${response.status}`);
+  }
+
+  if (response.status === 204) {
+    return null;
   }
 
   return response.json();
