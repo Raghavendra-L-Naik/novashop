@@ -3,11 +3,8 @@ package com.novashop.service;
 
 import com.novashop.dto.CheckoutRequest;
 import com.novashop.dto.OrderItemRequest;
-import com.novashop.entity.CustomerOrder;
-import com.novashop.entity.OrderItem;
-import com.novashop.entity.Product;
-import com.novashop.repository.OrderRepository;
-import com.novashop.repository.ProductRepository;
+import com.novashop.entity.*;
+import com.novashop.repository.*;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -15,30 +12,43 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.math.BigDecimal;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 @Service
 public class OrderService {
 
-    private final OrderRepository orderRepository;
-    private final ProductRepository productRepository;
+    private final OrderRepository orders;
+    private final ProductRepository products;
+    private final UserRepository users;
 
     public OrderService(
-            OrderRepository orderRepository,
-            ProductRepository productRepository) {
-        this.orderRepository = orderRepository;
-        this.productRepository = productRepository;
+            OrderRepository orders,
+            ProductRepository products,
+            UserRepository users) {
+        this.orders = orders;
+        this.products = products;
+        this.users = users;
     }
 
     @Transactional
-    public CustomerOrder placeOrder(CheckoutRequest request) {
+    public CustomerOrder placeOrder(
+            CheckoutRequest request, Long userId) {
+
+        AppUser user = users.findById(userId)
+            .orElseThrow(() ->
+                new ResponseStatusException(
+                    HttpStatus.UNAUTHORIZED,
+                    "User not found"
+                )
+            );
 
         CustomerOrder order = new CustomerOrder(
             request.customerName(),
-            request.email(),
+            user.getEmail(),
             request.shippingAddress()
         );
+
+        order.setUser(user);
 
         BigDecimal total = BigDecimal.ZERO;
         Set<Long> seenProducts = new HashSet<>();
@@ -52,7 +62,7 @@ public class OrderService {
                 );
             }
 
-            Product product = productRepository
+            Product product = products
                 .findById(item.productId())
                 .orElseThrow(() ->
                     new ResponseStatusException(
@@ -63,7 +73,6 @@ public class OrderService {
 
             if (product.getStock() == null ||
                 product.getStock() < item.quantity()) {
-
                 throw new ResponseStatusException(
                     HttpStatus.BAD_REQUEST,
                     "Insufficient stock for " + product.getName()
@@ -78,7 +87,6 @@ public class OrderService {
             );
 
             order.addItem(orderItem);
-
             total = total.add(orderItem.getSubtotal());
 
             product.setStock(
@@ -87,10 +95,13 @@ public class OrderService {
         }
 
         order.setTotalAmount(total);
+        products.flush();
 
-        // Flush to detect database errors before returning.
-        productRepository.flush();
+        return orders.saveAndFlush(order);
+    }
 
-        return orderRepository.saveAndFlush(order);
+    @Transactional(readOnly = true)
+    public List<CustomerOrder> getMyOrders(Long userId) {
+        return orders.findByUserIdOrderByCreatedAtDesc(userId);
     }
 }

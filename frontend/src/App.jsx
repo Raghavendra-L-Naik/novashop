@@ -3,10 +3,15 @@ import { useEffect, useState } from "react";
 import ProductCard from "./components/ProductCard";
 import Cart from "./components/Cart";
 import Checkout from "./components/Checkout";
+import Login from "./components/Login";
+import Register from "./components/Register";
+import OrderHistory from "./components/OrderHistory";
+import { apiRequest } from "./api";
 import "./App.css";
 
 function App() {
   const [page, setPage] = useState("products");
+  const [user, setUser] = useState(null);
   const [products, setProducts] = useState([]);
   const [cart, setCart] = useState(() => {
     try {
@@ -20,8 +25,8 @@ function App() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
 
   async function loadProducts() {
@@ -29,15 +34,7 @@ function App() {
     setError("");
 
     try {
-      const response = await fetch(
-        "http://localhost:8080/api/products"
-      );
-
-      if (!response.ok) {
-        throw new Error("Unable to load products");
-      }
-
-      const data = await response.json();
+      const data = await apiRequest("/api/products");
       setProducts(data);
     } catch (err) {
       setError(err.message);
@@ -48,6 +45,18 @@ function App() {
 
   useEffect(() => {
     loadProducts();
+
+    const token = sessionStorage.getItem("novashop-token");
+    const savedUser = sessionStorage.getItem("novashop-user");
+
+    if (token && savedUser) {
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch {
+        sessionStorage.removeItem("novashop-token");
+        sessionStorage.removeItem("novashop-user");
+      }
+    }
   }, []);
 
   useEffect(() => {
@@ -56,6 +65,23 @@ function App() {
       JSON.stringify(cart)
     );
   }, [cart]);
+
+  function handleLogin(loggedInUser) {
+    sessionStorage.setItem(
+      "novashop-user",
+      JSON.stringify(loggedInUser)
+    );
+    setUser(loggedInUser);
+    setPage("products");
+  }
+
+  function logout() {
+    sessionStorage.removeItem("novashop-token");
+    sessionStorage.removeItem("novashop-user");
+    setUser(null);
+    setCart([]);
+    setPage("products");
+  }
 
   function addToCart(product) {
     setCart(previous => {
@@ -127,16 +153,44 @@ function App() {
     0
   );
 
+  function goToCheckout() {
+    setPage(user ? "checkout" : "login");
+  }
+
   return (
     <div className="app">
       <header className="navbar">
-        <h2 onClick={() => setPage("products")}>
+        <h2
+          onClick={() => setPage("products")}
+          style={{ cursor: "pointer" }}
+        >
           NovaShop
         </h2>
 
-        <button onClick={() => setPage("cart")}>
-          🛒 Cart ({cartCount})
-        </button>
+        <nav className="nav-actions">
+          {user ? (
+            <>
+              <span>Hi, {user.name}</span>
+              <button onClick={() => setPage("orders")}>
+                My Orders
+              </button>
+              <button onClick={logout}>Logout</button>
+            </>
+          ) : (
+            <>
+              <button onClick={() => setPage("login")}>
+                Login
+              </button>
+              <button onClick={() => setPage("register")}>
+                Register
+              </button>
+            </>
+          )}
+
+          <button onClick={() => setPage("cart")}>
+            Cart ({cartCount})
+          </button>
+        </nav>
       </header>
 
       {page === "products" && (
@@ -161,7 +215,7 @@ function App() {
                 onChange={e => setCategory(e.target.value)}
               >
                 {categories.map(c => (
-                  <option key={c}>{c}</option>
+                  <option key={c} value={c}>{c}</option>
                 ))}
               </select>
             </div>
@@ -184,21 +238,42 @@ function App() {
         </>
       )}
 
+      {page === "login" && (
+        <Login
+          onLogin={handleLogin}
+          onRegister={() => setPage("register")}
+        />
+      )}
+
+      {page === "register" && (
+        <Register
+          onRegistered={() => setPage("login")}
+          onLogin={() => setPage("login")}
+        />
+      )}
+
       {page === "cart" && (
         <Cart
           cart={cart}
           updateQuantity={updateQuantity}
           removeFromCart={removeFromCart}
-          onCheckout={() => setPage("checkout")}
+          onCheckout={goToCheckout}
           onBack={() => setPage("products")}
         />
       )}
 
-      {page === "checkout" && (
+      {page === "checkout" && user && (
         <Checkout
           cart={cart}
+          user={user}
           onSuccess={handleOrderSuccess}
           onBack={() => setPage("cart")}
+        />
+      )}
+
+      {page === "orders" && user && (
+        <OrderHistory
+          onBack={() => setPage("products")}
         />
       )}
 
@@ -208,12 +283,11 @@ function App() {
           <p>Order ID: #{order.orderId}</p>
           <p>Status: {order.status}</p>
           <h2>
-            Total: ₹{Number(order.totalAmount)
+            ₹{Number(order.totalAmount)
               .toLocaleString("en-IN")}
           </h2>
-
-          <button onClick={() => setPage("products")}>
-            Continue Shopping
+          <button onClick={() => setPage("orders")}>
+            View My Orders
           </button>
         </main>
       )}

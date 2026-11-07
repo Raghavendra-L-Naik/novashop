@@ -33,12 +33,25 @@ public class CustomerOrder {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private AppUser user;
+
     @OneToMany(
         mappedBy = "order",
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
     private List<OrderItem> items = new ArrayList<>();
+
+    public AppUser getUser() {
+        return user;
+    }
+
+    public void setUser(AppUser user) {
+        this.user = user;
+    }
+
 
     protected CustomerOrder() {}
 

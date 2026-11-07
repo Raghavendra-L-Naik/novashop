@@ -63,6 +63,25 @@
 			<artifactId>spring-boot-starter-webmvc-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+<!-- Authentication and authorization -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-security</artifactId>
+</dependency>
+
+<!-- JWT resource server support -->
+<dependency>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-starter-oauth2-resource-server</artifactId>
+</dependency>
+
+<!-- JWT signing and verification -->
+<dependency>
+    <groupId>org.springframework.security</groupId>
+    <artifactId>spring-security-oauth2-jose</artifactId>
+</dependency>
+
 	</dependencies>
 
 	<build>
