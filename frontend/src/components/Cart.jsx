@@ -1,4 +1,6 @@
 
+import { getProductImageUrl } from "../productImages";
+
 export default function Cart({
   cart,
   updateQuantity,
@@ -23,7 +25,7 @@ export default function Cart({
         <>
           {cart.map(item => (
             <div className="cart-item" key={item.id}>
-              <img src={item.imageUrl} alt={item.name} />
+              <img src={getProductImageUrl(item)} alt={item.name} />
 
               <div className="cart-details">
                 <h3>{item.name}</h3>

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600" fill="none">
+  <defs>
+    <linearGradient id="background" x1="80" y1="50" x2="720" y2="570" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#172554"/>
+      <stop offset="1" stop-color="#080B18"/>
+    </linearGradient>
+    <linearGradient id="body" x1="180" y1="190" x2="630" y2="430" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#3B3E52"/>
+      <stop offset="1" stop-color="#171923"/>
+    </linearGradient>
+    <linearGradient id="rgb" x1="200" y1="345" x2="600" y2="420" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D3EE"/>
+      <stop offset=".48" stop-color="#A855F7"/>
+      <stop offset="1" stop-color="#FB7185"/>
+    </linearGradient>
+    <pattern id="keys" width="48" height="43" patternUnits="userSpaceOnUse">
+      <rect x="4" y="4" width="39" height="33" rx="6" fill="#252938" stroke="#61677B" stroke-width="2"/>
+      <path d="M10 10h15" stroke="#8B91A5" stroke-opacity=".55" stroke-width="2" stroke-linecap="round"/>
+    </pattern>
+    <filter id="glow" x="85" y="250" width="630" height="270" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
+      <feGaussianBlur stdDeviation="24"/>
+    </filter>
+  </defs>
+  <rect width="800" height="600" rx="32" fill="url(#background)"/>
+  <circle cx="226" cy="142" r="118" fill="#2563EB" fill-opacity=".12"/>
+  <circle cx="614" cy="420" r="150" fill="#A855F7" fill-opacity=".12"/>
+  <path d="M156 356 210 216q8-20 30-20h342q22 0 30 20l54 140q8 20-9 34L562 484H258l-95-94q-15-14-7-34Z" fill="url(#rgb)" opacity=".55" filter="url(#glow)"/>
+  <path d="m162 336 52-125q8-20 29-20h314q21 0 29 20l52 125q8 19-8 33l-82 72H252l-82-72q-16-14-8-33Z" fill="url(#body)" stroke="#737A91" stroke-width="5"/>
+  <path d="m215 216h342l52 126H163l52-126Z" fill="url(#keys)"/>
+  <path d="M184 355h433" stroke="url(#rgb)" stroke-width="10" stroke-linecap="round"/>
+  <rect x="322" y="375" width="154" height="30" rx="8" fill="#252938" stroke="#737A91" stroke-width="2"/>
+  <path d="M340 385h118" stroke="#A855F7" stroke-opacity=".8" stroke-width="3" stroke-linecap="round"/>
+  <text x="400" y="534" fill="#E2E8F0" font-family="Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="5" text-anchor="middle">RGB GAMING KEYBOARD</text>
+</svg>

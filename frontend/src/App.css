@@ -60,6 +60,7 @@ body {
 
 .filters {
   display: flex;
+  flex-wrap: wrap;
   gap: 15px;
   margin: 28px 0;
 }
@@ -75,6 +76,11 @@ body {
 .filters input {
   flex: 1;
   min-width: 0;
+}
+
+.filters select {
+  min-width: 175px;
+  background: white;
 }
 
 .product-grid {
@@ -124,6 +130,46 @@ body {
 
 .product-bottom strong {
   font-size: 18px;
+}
+
+.product-cart-action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+}
+
+.product-cart-action span {
+  color: #64748b;
+  font-size: 12px;
+}
+
+.dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.added-dialog {
+  position: static;
+  width: min(100%, 400px);
+  margin: 0;
+  padding: 28px;
+  border: 0;
+  border-radius: 14px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
+}
+
+.added-dialog h2 {
+  margin-top: 0;
+}
+
+.added-dialog p {
+  color: #64748b;
 }
 
 button {
@@ -284,6 +330,15 @@ footer {
 }
 
 @media (max-width: 700px) {
+  .filters input {
+    flex-basis: 100%;
+  }
+
+  .filters select {
+    flex: 1;
+    min-width: 0;
+  }
+
   .checkout-layout {
     grid-template-columns: 1fr;
   }

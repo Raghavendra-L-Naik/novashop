@@ -40,9 +40,11 @@ function App() {
 
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("All");
+  const [priceSort, setPriceSort] = useState("default");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [order, setOrder] = useState(null);
+  const [addedProduct, setAddedProduct] = useState(null);
 
   async function loadProducts() {
     try {
@@ -105,16 +107,21 @@ function App() {
   }
 
   function addToCart(product) {
+    const existing = cart.find(item => item.id === product.id);
+
+    if (
+      product.stock <= 0 ||
+      (existing?.quantity ?? 0) >= product.stock
+    ) {
+      return;
+    }
+
     setCart(previous => {
-      const existing = previous.find(
+      const currentItem = previous.find(
         item => item.id === product.id
       );
 
-      if (existing) {
-        if (existing.quantity >= product.stock) {
-          return previous;
-        }
-
+      if (currentItem) {
         return previous.map(item =>
           item.id === product.id
             ? { ...item, quantity: item.quantity + 1 }
@@ -126,6 +133,7 @@ function App() {
 
       return [...previous, { ...product, quantity: 1 }];
     });
+    setAddedProduct(product);
   }
 
   function updateQuantity(id, change) {
@@ -164,10 +172,22 @@ function App() {
     ...new Set(products.map(p => p.category))
   ];
 
-  const filteredProducts = products.filter(product =>
-    product.name.toLowerCase().includes(search.toLowerCase()) &&
-    (category === "All" || product.category === category)
-  );
+  const filteredProducts = products
+    .filter(product =>
+      product.name.toLowerCase().includes(search.toLowerCase()) &&
+      (category === "All" || product.category === category)
+    )
+    .sort((a, b) => {
+      if (priceSort === "low-to-high") {
+        return Number(a.price) - Number(b.price);
+      }
+
+      if (priceSort === "high-to-low") {
+        return Number(b.price) - Number(a.price);
+      }
+
+      return 0;
+    });
 
   const cartCount = cart.reduce(
     (sum, item) => sum + item.quantity,
@@ -246,10 +266,21 @@ function App() {
               <select
                 value={category}
                 onChange={e => setCategory(e.target.value)}
+                aria-label="Filter by category"
               >
                 {categories.map(c => (
                   <option key={c} value={c}>{c}</option>
                 ))}
+              </select>
+
+              <select
+                value={priceSort}
+                onChange={e => setPriceSort(e.target.value)}
+                aria-label="Sort products by price"
+              >
+                <option value="default">Sort by price</option>
+                <option value="low-to-high">Price: Low to High</option>
+                <option value="high-to-low">Price: High to Low</option>
               </select>
             </div>
 
@@ -262,6 +293,9 @@ function App() {
                   <ProductCard
                     key={product.id}
                     product={product}
+                    cartQuantity={
+                      cart.find(item => item.id === product.id)?.quantity ?? 0
+                    }
                     onAddToCart={addToCart}
                   />
                 ))}
@@ -331,7 +365,23 @@ function App() {
   />
 )}
 
-      <footer>© NovaShop — Your Online Store</footer>
+{addedProduct && (
+  <div className="dialog-backdrop">
+    <dialog
+      open
+      className="added-dialog"
+      aria-labelledby="added-dialog-title"
+    >
+      <h2 id="added-dialog-title">Added successfully</h2>
+      <p>{addedProduct.name} was added to your cart.</p>
+      <button onClick={() => setAddedProduct(null)}>
+        Continue Shopping
+      </button>
+    </dialog>
+  </div>
+)}
+
+<footer>© NovaShop — Your Online Store</footer>
     </div>
   );
 }

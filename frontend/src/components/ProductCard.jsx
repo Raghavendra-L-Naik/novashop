@@ -1,8 +1,13 @@
 
-function ProductCard({ product, onAddToCart }) {
+import { getProductImageUrl } from "../productImages";
+
+function ProductCard({ product, cartQuantity, onAddToCart }) {
+  const outOfStock = product.stock <= 0;
+  const stockLimitReached = cartQuantity >= product.stock;
+
   return (
     <div className="product-card">
-      <img src={product.imageUrl} alt={product.name} />
+      <img src={getProductImageUrl(product)} alt={product.name} />
 
       <div className="product-info">
         <span className="category">{product.category}</span>
@@ -14,12 +19,21 @@ function ProductCard({ product, onAddToCart }) {
             ₹{Number(product.price).toLocaleString("en-IN")}
           </strong>
 
-          <button
-            disabled={product.stock <= 0}
-            onClick={() => onAddToCart(product)}
-          >
-            {product.stock > 0 ? "Add to Cart" : "Out of Stock"}
-          </button>
+          <div className="product-cart-action">
+            <button
+              disabled={outOfStock || stockLimitReached}
+              onClick={() => onAddToCart(product)}
+            >
+              {outOfStock
+                ? "Out of Stock"
+                : stockLimitReached
+                  ? "Stock Limit Reached"
+                  : "Add to Cart"}
+            </button>
+            <span aria-live="polite">
+              In cart: {cartQuantity}
+            </span>
+          </div>
         </div>
       </div>
     </div>
