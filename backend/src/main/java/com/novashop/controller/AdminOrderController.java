@@ -30,9 +30,20 @@ public class AdminOrderController {
         Long id,
         String customerName,
         String email,
+        String shippingAddress,
         BigDecimal totalAmount,
         String status,
-        LocalDateTime createdAt
+        String paymentStatus,
+        String paymentFailureReason,
+        LocalDateTime createdAt,
+        List<AdminOrderItemResponse> items
+    ) {}
+
+    public record AdminOrderItemResponse(
+        String productName,
+        Integer quantity,
+        BigDecimal unitPrice,
+        BigDecimal subtotal
     ) {}
 
     public enum OrderStatus {
@@ -52,13 +63,25 @@ public class AdminOrderController {
             order.getId(),
             order.getCustomerName(),
             order.getEmail(),
+            order.getShippingAddress(),
             order.getTotalAmount(),
             order.getStatus(),
-            order.getCreatedAt()
+            order.getPaymentStatus(),
+            order.getPaymentFailureReason(),
+            order.getCreatedAt(),
+            order.getItems().stream()
+                .map(item -> new AdminOrderItemResponse(
+                    item.getProductName(),
+                    item.getQuantity(),
+                    item.getUnitPrice(),
+                    item.getSubtotal()
+                ))
+                .toList()
         );
     }
 
     @GetMapping
+    @Transactional(readOnly = true)
     public List<AdminOrderResponse> getAllOrders() {
         return repository.findAll()
             .stream()
@@ -79,6 +102,13 @@ public class AdminOrderController {
                     "Order not found"
                 )
             );
+
+        if ("PENDING".equals(order.getPaymentStatus())) {
+            throw new ResponseStatusException(
+                HttpStatus.CONFLICT,
+                "A pending payment cannot be fulfilled."
+            );
+        }
 
         order.setStatus(request.status().name());
 

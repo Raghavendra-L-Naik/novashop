@@ -346,9 +346,10 @@ function App() {
 
       {page === "success" && order && (
         <main className="store success-page">
-          <h1>Order Placed Successfully!</h1>
+          <h1>Payment Successful — Order Placed!</h1>
           <p>Order ID: #{order.orderId}</p>
           <p>Status: {order.status}</p>
+          <p>Payment: {order.paymentStatus}</p>
           <h2>
             ₹{Number(order.totalAmount)
               .toLocaleString("en-IN")}

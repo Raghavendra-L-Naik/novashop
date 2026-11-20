@@ -33,6 +33,18 @@ public class CustomerOrder {
     @Column(nullable = false)
     private LocalDateTime createdAt;
 
+    @Column
+    private String paymentStatus;
+
+    @Column(unique = true)
+    private String razorpayOrderId;
+
+    @Column
+    private String razorpayPaymentId;
+
+    @Column(length = 255)
+    private String paymentFailureReason;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private AppUser user;
@@ -55,6 +67,38 @@ public class CustomerOrder {
 public void setStatus(String status) {
     this.status = status;
 }
+
+    public String getPaymentStatus() {
+        return paymentStatus == null ? "NOT_TRACKED" : paymentStatus;
+    }
+
+    public void setPaymentStatus(String paymentStatus) {
+        this.paymentStatus = paymentStatus;
+    }
+
+    public String getRazorpayOrderId() {
+        return razorpayOrderId;
+    }
+
+    public void setRazorpayOrderId(String razorpayOrderId) {
+        this.razorpayOrderId = razorpayOrderId;
+    }
+
+    public String getRazorpayPaymentId() {
+        return razorpayPaymentId;
+    }
+
+    public void setRazorpayPaymentId(String razorpayPaymentId) {
+        this.razorpayPaymentId = razorpayPaymentId;
+    }
+
+    public String getPaymentFailureReason() {
+        return paymentFailureReason;
+    }
+
+    public void setPaymentFailureReason(String paymentFailureReason) {
+        this.paymentFailureReason = paymentFailureReason;
+    }
 
 
 

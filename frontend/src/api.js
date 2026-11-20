@@ -16,15 +16,40 @@ export async function apiRequest(path, options = {}) {
   });
 
   if (!response.ok) {
+    let responseMessage = "";
+    const responseBody = await response.text();
+
+    if (responseBody) {
+      try {
+        const errorBody = JSON.parse(responseBody);
+        responseMessage =
+          errorBody.detail ||
+          errorBody.message ||
+          errorBody.error ||
+          "";
+      } catch {
+        responseMessage = responseBody;
+      }
+    }
+    const requestPath = new URL(response.url).pathname;
+
     if (response.status === 401) {
-      throw new Error("Session expired or unauthorized. Log in again.");
+      throw new Error(
+        responseMessage || "Session expired or unauthorized. Log in again."
+      );
     }
 
     if (response.status === 403) {
-      throw new Error("You don't have permission to do that.");
+      throw new Error(
+        responseMessage || "You don't have permission to do that."
+      );
     }
 
-    throw new Error(`Request failed: HTTP ${response.status}`);
+    throw new Error(
+      responseMessage
+        ? `${responseMessage} (HTTP ${response.status}, ${requestPath})`
+        : `Request failed: HTTP ${response.status} (${requestPath})`
+    );
   }
 
   if (response.status === 204) {

@@ -43,6 +43,10 @@ export default function OrderHistory({ onBack }) {
           <h3>Order #{order.orderId}</h3>
 
           <p>Status: {order.status}</p>
+          <p>Payment: {order.paymentStatus}</p>
+          {order.paymentFailureReason && (
+            <p className="error">{order.paymentFailureReason}</p>
+          )}
           <p>
             Date: {new Date(order.createdAt).toLocaleString()}
           </p>

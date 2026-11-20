@@ -1,14 +1,10 @@
 
 package com.novashop.controller;
 
-import com.novashop.dto.CheckoutRequest;
 import com.novashop.entity.CustomerOrder;
 import com.novashop.entity.OrderItem;
 import com.novashop.service.OrderService;
 
-import jakarta.validation.Valid;
-
-import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,6 +32,8 @@ public class OrderController {
     public record OrderResponse(
         Long orderId,
         String status,
+        String paymentStatus,
+        String paymentFailureReason,
         BigDecimal totalAmount,
         LocalDateTime createdAt,
         List<OrderItemResponse> items
@@ -55,24 +53,11 @@ public class OrderController {
         return new OrderResponse(
             order.getId(),
             order.getStatus(),
+            order.getPaymentStatus(),
+            order.getPaymentFailureReason(),
             order.getTotalAmount(),
             order.getCreatedAt(),
             items
-        );
-    }
-
-    @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public OrderResponse placeOrder(
-            @Valid @RequestBody CheckoutRequest request,
-            JwtAuthenticationToken authentication) {
-
-        Long userId = Long.valueOf(
-            authentication.getToken().getSubject()
-        );
-
-        return toResponse(
-            service.placeOrder(request, userId)
         );
     }
 
